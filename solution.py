@@ -1,25 +1,22 @@
 import pandas as pd
 import numpy as np
-
+from scipy.stats import chi2
 from scipy.stats import norm
 
 
 chat_id = 816831722 # Ваш chat ID, не меняйте название переменной
 
 def solution(p: float, x: np.array) -> tuple:
-    # Измените код этой функции
-    # Это будет вашим решением
-    # Не меняйте название функции и её аргументы
-    
-    # Устанавливаем количество бутстрэп-выборок
-    n_bootstrap_samples = 1000
-    
     n = len(x)
-    bootstrapped_statistics = []
-    for i in range(n_bootstrap_samples):
-        bootstrap_sample = np.random.choice(x, n, replace=True)
-        bootstrapped_statistics.append(np.mean(bootstrap_sample))
-    alpha = (1 - p) / 2
-    lower_quantile = np.quantile(bootstrapped_statistics, alpha)
-    upper_quantile = np.quantile(bootstrapped_statistics, 1 - alpha)
-    return lower_quantile, upper_quantile
+    x_mean = np.mean(x)
+    s_squared = np.sum((x - x_mean) ** 2) / (n - 1)
+
+    alpha = 1 - p  # уровень значимости
+    df = n - 1    # степень свободы
+
+    chi2_lower = chi2.ppf(alpha / 2, df)
+    chi2_upper = chi2.ppf(1 - alpha / 2, df)
+
+    ci_lower = np.sqrt((n - 1) * s_squared / chi2_upper)
+    ci_upper = np.sqrt((n - 1) * s_squared / chi2_lower)
+    return ci_lower, ci_upper
